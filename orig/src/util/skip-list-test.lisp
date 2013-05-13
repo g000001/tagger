@@ -1,0 +1,71 @@
+(in-package :skip-list)
+
+(defun simple-string-order (s1 s2)
+  (declare (simple-string s1 s2) (optimize (speed 3) (safety 0)))
+  (let ((l1 (length s1))
+        (l2 (length s2)))
+    (declare (fixnum l1 l2))
+    (dotimes (i (min l1 l2) (if (= l1 l2) :equal (< l1 l2)))
+      (declare (fixnum i))
+      (let ((c1 (schar s1 i))
+            (c2 (schar s2 i)))
+	(when (char/= c1 c2)
+	  (return (char< c1 c2)))))))
+
+(defconstant +max-length+ 20000)
+(defparameter *sav-strings*
+  (let ((strings ()))
+    (dotimes (i +max-length+ strings)
+      (push (princ-to-string (+ (* (random +max-length+) +max-length+) i))
+	    strings))))
+
+(defvar *strings* nil)
+
+(defvar *skip-list* (make-skip-list #'simple-string-order))
+
+(defun insert-test (&optional (skip-list *skip-list*))
+  (time (dolist (s *strings*)
+	  (setf (skip-list-get s skip-list) s))))
+
+(defun access-test (&optional (skip-list *skip-list*))
+  (time (dolist (s *strings*)
+	  (unless (skip-list-get s skip-list)
+	    (error "~S not found!" s)))))
+
+;;breaks if same item appears twice in list of *strings*
+(defun remove-test (&optional (skip-list *skip-list*))
+  (time (dolist (s *strings*)
+	  (unless (skip-list-remove s skip-list)
+	    (error "~S not found!" s)))))
+
+(defun pop-test (&optional (skip-list *skip-list*))
+  (time (let ((last-key nil))
+	  (loop (multiple-value-bind (key val) (skip-list-pop skip-list)
+		  (unless key (return))
+		  (when (and last-key (simple-string-order key last-key))
+		    (error "~A and ~A badly ordered!" key last-key))
+		  (unless (eq key val)
+		    (error "~A's value is wrong!" key)))))))
+
+(defun test (&optional (n (length *sav-strings*)))
+  (setq *skip-list* (make-skip-list #'simple-string-order))
+  (setq *strings* (subseq *sav-strings* 0 n))
+  (insert-test)
+  (access-test)
+  (remove-test)
+  (insert-test)
+  (pop-test))
+
+(defun pprint-skip-list (skip-list &optional (stream *standard-output*))
+  (let ((level (1+ (skip-list-level skip-list))))
+    (do-nodes (node skip-list)
+      (let ((height (length node)))
+	(fresh-line stream)
+	(dotimes (i (- height +first-level+))
+	  (write-char #\+ stream))
+	(dotimes (i (- level height))
+	  (write-char #\| stream))
+	(write-char #\space stream)
+	(princ (node-key node))
+	(terpri stream)))))
+

@@ -1,0 +1,303 @@
+All (new) symbols described herein live in the package DEFSYSTEM, nicknamed
+DEFSYS.
+
+
+SET-SYSTEM-SOURCE-FILE name pathname				[function]
+
+Informs the defsystem utility that the definition of the system name can be
+found by loading the file pathname.
+
+
+LOAD-SYSTEM-DEF name &optional reload				[function]
+
+If there is a system named name and reload is false (the default), does nothing.
+Otherwise, loads the system defintion from a file.  If SET-SYSTEM-SOURCE-FILE
+has been used to give an explicit source file for the system defintion, that
+file is used.  Otherwise the file <name>-sysdcl.lisp is loaded from the
+directory specified in *SYSDCL-PATHNAME-DEFAULTS* if such a file exists.
+Returns false if the system was not loaded and is not already defined, true
+otherwise.
+
+
+*SYSDCL-PATHNAME-DEFAULTS*					[variable]
+
+Specifies the location for system declaration files.
+*sysdcl-pathname-defaults* is a list of pathnames; each location is
+searched for the declaration file.  The default value is (list
+#P"/import/commonlisp-library/sysdcl/").
+
+
+DEFSYSTEM name system-options &rest module-descriptions		[macro]
+
+The name of the system (which is interned in the current package), is used
+by defsystem to allow dependencies between multiple systems.
+
+The system-options is a plist which may contain each of the following
+keywords:
+
+:default-pathname
+The default place in which to find files; this value defaults to the null 
+string.  This argument is evaluated (unlike most of the others).
+
+:default-binary-pathname
+The default location in which to place and look for binaries.  This defaults to
+the value of the :default-pathname option.  This argument is evaluated (unlike
+most of the others).
+
+:default-package
+The default package to load/compile modules in; this value defaults to the
+current package.
+
+:default-optimizations
+List of default compiler optimizations settings to use when compiling modules.
+If nil, optimization levels are not changed.
+
+:needed-systems
+A list of subsystems; this value defaults to nil.
+
+:load-before-compile
+A list of subsystems needed for compilation; this value defaults to nil.  A
+value of T means all needed subsystems.
+
+
+The module-descriptions is a list of modules which make up a system.  A 
+module is a list whose car is the module name and whose cdr is a list of
+keywords and values.  The module keywords may contain each of the following:
+
+
+:load-before-compile
+The load-before-compile keyword specifies a list of modules which will cause
+this module to be recompiled.  If any of listed modules is newer then the
+current module; the current module will be recompiled.  If the current module is
+recompiled the list of recompile dependencies will be loaded first.
+
+This is also a recursive recompilation.  If foo dependends on bar and bar
+is out of date then bar will be recompiled before foo is recompiled.
+
+A value of T means all modules that occur earlier in the system definition. This
+value defaults to nil.
+
+:load-after
+
+The load-after keyword specifies a list of modules which should be loaded before
+the current module is loaded.  This option is useful only for modules during
+compilation since the load order will normally be satisfied during a
+load-system.  A value of T means all modules that occur earlier in the system
+definition.  This value defaults to nil.
+
+:pathname
+The pathname keyword specifies a pathname to find the current module.
+Normally the pathname is the result of the concatenation of the default
+pathname for the system and the module name.  This value defaults to nil.
+This argument is evaluated, unlike the other module options.
+
+:binary-pathname
+Specifies the pathname for the binary of the current module.  Defaults to the
+pathname with the same directory & name as the module source, with an
+appropriate file type.
+
+:package
+The package keyword specifies a package in which to load/compile the current
+module.  Normally the package is the default package for the system.
+This value defaults to nil.
+
+:compile-satisfies-load
+The compile-satisfies-load keyword specifies that compiling the current
+module will satisfy a load (and hence the current module will not be loaded
+during a compile).  This option is useful only for files containing macros.
+This value defaults to false.
+
+:language
+The language the source is written in.  See the variable *LANGUAGE-DESCRIPTIONS*
+for further info.  The default is :LISP.
+
+:optimizations
+List of compiler optimization settings to use when compiling the module.  A
+useful value for lisp might be ((SPEED 3) (SAFETY 0)); for C ("-O").  If not
+present, the system's default-optimizations are used.  If they too are absent,
+the current settings are used.
+
+:libraries
+List of object libraries to load when the module is loaded.  This is
+only useful for languages like C.
+
+:features
+Run-time conditionialization, similar to #+.  The module is used iff the
+features is "true" in the same way that #+ interpretes the features.
+Additionally, features may be T (the default) which is always true, or a list of
+features which is true iff at least one of the features matches.
+
+:eval-after
+If present, a form that will be evaluated after the module is loaded.  It
+should be noted that this is evaluated each time the module is loaded,
+whether or not the coresponding -file- is loaded.
+
+:binary-only
+If true, declares that there is no source file associated with the module.  No
+attempt will be name to compile it.  Defaults to false.
+
+
+
+*LANGUAGE-DESCRIPTIONS*						[variable]
+
+An alist describing how files written in different languages are compiled and
+loaded.  Each entry in the list is of the form (language-name source-file-type
+binary-file-type compile-fn load-fn).  The language-name is the (keyword) name
+of the language.  Source-file-type and binary-file-type are lists of strings;
+they are the file-types for source and binary files for the language.  The
+compile-fn is symbol that will be called with three arguments to compile the
+source file; the pathname of the source file, the pathname of the binary output
+file, and a list of the optimizations declared for the module.  Load-fn is a
+symbol that will be called with two required argument to load the binary file:
+the pathname of the binary, and a list of object library files to use.
+
+The initial value of *language-descriptions* contains a description of :lisp and
+:c languages.  The description of :lisp uses the second argument to the
+compile-fn as a list of compiler optimization settings.  The description of :c
+uses the list as a set of additional arguments to pass to the C compiler.
+
+
+UNDEFSYSTEM name						[macro]
+
+This macro removes the named system description from the list of all systems.
+
+
+LOAD-SYSTEM name &key reload recurse trace source-if-newer	[function]
+
+This function loads the modules of the system with the specified name and is
+called recursively for all required systems.  While the system is being loaded,
+the special variable *CURRENT-SYSTEM* is bound to the name of the system.
+
+The keyword args act as follows:
+
+reload
+The reload keyword, if true, specifies that a full reload of all system modules
+and required systems, regardless of need.  This value defaults to false.
+
+recurse
+
+If recurse is true, required systems are reloaded if the currently loaded
+version is not up-to-date or if the reload option is true.  If recurse is false
+(the default), a required subsystem is not loaded if there is already a version
+loaded.
+
+trace
+If true, no module or subsystem is actually loaded.  Instead a message is
+printed out informing you of what would have been loaded.  The default value is
+false.
+
+source-if-newer
+If true and a module's source is newer than its binary, or the binary does not exist,
+the source will be loaded.  In all other cases, the binary will be loaded.  The
+default value is false.
+
+
+COMPILE-SYSTEM name &key recompile reload propagate trace include-components
+								[function]
+
+This function compiles the modules of the system with the specified name
+and is called recursively for all required systems.  While the system is being
+compiled, the special variable *CURRENT-SYSTEM* is bound to the name of the system.
+
+The keyword args act as follows:
+
+recompile
+The recompile keyword, if true, specifies that all modules should be recompiled,
+regardless of need.  This value defaults to false.
+
+include-components
+The include-components keyword, if true, specifies that compile-system should 
+load all required systems.  This value defaults to true.
+
+reload
+The reload keyword, if true, specifies that a full reload of all system modules
+and required systems, regardless of need.  This value defaults to false.
+
+propagate
+If true, the compile propagates to all subsystems (those required to load and to
+compile this system).  The default is false.
+
+trace
+If true, no module of subsystem is actually compiled.  Instead a message is
+printed out informing you of what would have been done.  The default value is
+false.
+
+
+SHOW-SYSTEM name						[function]
+
+This function outputs a formatted description of the system with the 
+specified name.
+
+
+
+PATHNAME SUPPORT
+
+  It is impossible to write portable code that can produce a pathname
+  in a subdirectory of a hierarchical file system. This defeats much of
+  the purpose of the pathname abstraction.
+
+  According to CLtL, only a string is a portable value for the directory
+  component of a pathname.  Thus in order to denote a subdirectory, the use
+  of punctuation characters (such as dots, slashes, or backslashes) would
+  be necessary. The very fact that such syntax varies from host to host
+  means that although the representation might be "portable", the code
+  using that representation is not portable.
+
+  This problem is even worse for programs running on machines on a network
+  that can retrieve files from multiple hosts, each using a different OS
+  and thus different subdirectory punctuation.
+
+  Proposal:
+
+  Allow the value of a pathname's directory component to be a list.  The
+  car of the list is one of the symbols :ABSOLUTE or :RELATIVE.
+  Each remaining element of the list is a string or a symbol (see below).
+  Each string names a single level of directory structure.  The strings
+  should contain only the directory names themselves -- no punctuation
+  characters.
+
+  A list whose car is the symbol :ABSOLUTE represents a directory path
+  starting from the root directory.  The list (:ABSOLUTE) represents
+  the root directory.  The list (:ABSOLUTE "foo" "bar" "baz") represents
+  the directory called "/foo/bar/baz" in Unix [except possibly for
+  alphabetic case -- that is the subject of a separate issue].
+
+  A list whose car is the symbol :RELATIVE represents a directory path
+  starting from a default directory.  The list (:RELATIVE) has the same
+  meaning as NIL and hence is not used.  The list (:RELATIVE "foo" "bar")
+  represents the directory named "bar" in the directory named "foo" in the
+  default directory.
+
+  [From the X3J13 PATHANME-SUBDIRECTORY-LIST proposal]
+
+
+Unfortunatly, current lisps don't implement this proposal.  The DEFSYSTEM
+utility implements the following two functions that support this proposal.
+
+MAKE-PATHNAME &key host device directory name type version defaults 	
+								[Function]
+PATHNAME-DIRECTORY pathname					[Function]
+
+These functions shadow the functions in the LISP package, and support the
+subdirectory list syntax described below.
+
+Here's an sample sysdcl file that shows how the DEFSYSTEM functions and these
+pathname functions work together.
+
+  (in-package "DEFSYSTEM")
+  
+  (defvar *my-system-default-directory*
+    (make-pathname :directory '(:absolute "import" "my-system" "release-1.0")))
+  
+  (set-system-source-file :mysys-test
+    (make-pathname :directory '(:relative "test")
+                   :name "test-sysdcl"
+                   :defaults *my-system-default-directory*))
+  
+  (defsystem :my-system (:default-pathname *my-system-default-directory*
+                         :default-package "USER"
+                         :load-before-compile ()
+                         :needed-systems ())
+    ...)
+
+
