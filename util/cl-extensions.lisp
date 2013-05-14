@@ -278,8 +278,10 @@
      generic-function
      (pcl::compute-effective-method
       generic-function pcl::*standard-method-combination* methods))
-    #+(and allegro (version>= 4))
+    #+(and allegro (version>= 4) (not (version>= 8)))
     (clos::compute-effective-method-standard-mc generic-function methods)
+    #+(and allegro (version>= 8) )
+    (excl::compute-effective-method-standard-mc generic-function methods)
     #+lucid
     (clos::make-effective-method-function 
      generic-function
@@ -387,14 +389,14 @@
 ;;;; FAST-READ-CHAR: returns :EOF at eof
 
 (defmacro fast-read-char (stream)
-  #+(and allegro (version>= 4)) `(stream:stream-read-char ,stream)
+  ;; #+(and allegro (version>= 4)) `(stream:stream-read-char ,stream)
   #+lucid`(lcl:fast-read-char ,stream nil :eof)
   #+mcl`(or (ccl:stream-tyi ,stream) :eof)
-  #-(or (and allegro (version>= 4)) lucid mcl) `(read-char ,stream nil :eof))
+  #-(or lucid mcl) `(read-char ,stream nil :eof))
 
 (defmacro fast-read-file-char (stream) `(fast-read-char ,stream))
 
-#+(and allegro (version>= 4))
+#+(and allegro-foo (version>= 4))
 (define-compiler-macro fast-read-file-char (stream)
   `(macrolet ((stream-slots (stream)
 		`(the simple-vector (svref ,stream 1)))
@@ -404,7 +406,7 @@
 		`(the fixnum (svref ,slots 12)))
 	      (stream-maxbuffpos (slots)
 		`(the fixnum (svref ,slots 13))))
-     (declare (optimize (speed 3) (safety 0)))
+     #|(declare (optimize (speed 3) (safety 0)))|#
      (let* ((stream ,stream)
 	    (slots (stream-slots stream))
 	    (buffpos (stream-buffpos slots))

@@ -73,7 +73,7 @@
 	 
 	 (defun ,%alloc-fn (size &optional (will-reclaim-p t))
 	   (declare (fixnum size))
-	   #+excl ;; use static arrays whenever possible
+	   #+(and excl (not :ansi-cl)) ;; use static arrays whenever possible
 	   ,(let ((type (upgraded-array-element-type element-type)))
 	      (if (etypecase type
 		    (symbol
@@ -87,7 +87,7 @@
 					       ',element-type)
 		     (make-array size :element-type ',element-type))
 		`(make-array size :element-type ',element-type)))
-	   #-excl
+	   #-(and excl (not :ansi-cl))
 	   (make-array size :element-type ',element-type))
 
 	 (defvar ,storage-var 

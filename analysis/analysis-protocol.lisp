@@ -51,7 +51,8 @@
 	 (file-position char-stream start) ; reposition to START if provided
 	 (setq start (file-position char-stream)))
      (unless end			; default END to end of CHAR-STREAM
-       (setq end (cl-extensions::file-length char-stream)))
+       #-allegro (setq end (cl-extensions::file-length char-stream))
+       #+allegro (setq end (file-length char-stream)))
      (apply #'call-next-method stream slots :start start :end end rest))
     (t (call-next-method))))
 

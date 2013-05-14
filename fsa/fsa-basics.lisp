@@ -413,8 +413,8 @@
 #+mcl(defmethod class-slots (class) (class-instance-slots class))
 
 
-(defmethod make-load-form ((fsa fsa) #+(or sgi cmu17 sbcl) &optional
-				     #+(or sgi cmu17 sbcl) env)
+(defmethod make-load-form ((fsa fsa) #+(or sgi cmu17 sbcl allegro) &optional
+				     #+(or sgi cmu17 sbcl allegro) env)
   #+cmu17 (declare (ignore env))
   (multiple-value-bind (form fixups)
       #+cmu17
@@ -437,11 +437,11 @@
        (set-difference
 	(mapcar #'c2mop:slot-definition-name (c2mop:class-slots (class-of fsa)))
 	'(fsa-delta fsa-final-states))
-       #+(or sgi sbcl) :environment #+(or sgi sbcl) env)
+       #+(or sgi ansi-cl) :environment #+(or sgi ansi-cl) env)
     (values
      form
      `(progn
-        #+(or mcl (and sgi allegro-v4.2) sbcl)
+        #+(or mcl (and sgi allegro-v4.2) ansi-cl)
         (initialize-instance ,fsa)
 	,fixups
 	,(make-fsa-delta-load-form fsa)
