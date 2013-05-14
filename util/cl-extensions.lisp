@@ -263,7 +263,7 @@
 #+mcl
 (eval-when (compile eval load) (import 'ccl:class-precedence-list))
 
-#+(or (and allegro (version>= 4)) lucid pcl mcl sbcl)
+#+(or (and allegro (version>= 4)) lucid pcl mcl sbcl ccl)
 (defun get-qua-internal (generic-function class superclass)
   ;; This assumes standard method combination, one argument generic
   ;; functions, and primary methods only.
@@ -286,7 +286,7 @@
     (clos::make-effective-method-function 
      generic-function
      (clos::compute-effective-method-body generic-function methods))
-    #+mcl
+    #+(or mcl ccl)
     (ccl::compute-effective-method 
      generic-function
      (ccl::generic-function-method-combination generic-function)
@@ -429,7 +429,7 @@
 
 ;; No fix needed for franz 4.x
 
-#+sbcl
+#+(or sbcl ccl)
 (defmethod file-length ((stream stream))
   (cl:file-length stream))
 
@@ -437,6 +437,10 @@
 #+sbcl
 (defmethod file-length ((stream string-stream))
   (sb-impl::string-input-stream-end stream))
+
+#+ccl
+(defmethod file-length ((stream string-stream))
+  (ccl::stream-length stream))
 
 
 #+mcl

@@ -413,8 +413,8 @@
 #+mcl(defmethod class-slots (class) (class-instance-slots class))
 
 
-(defmethod make-load-form ((fsa fsa) #+(or sgi cmu17 sbcl allegro) &optional
-				     #+(or sgi cmu17 sbcl allegro) env)
+(defmethod make-load-form ((fsa fsa) #+(or sgi cmu17 ansi-cl) &optional
+				     #+(or sgi cmu17 ansi-cl) env)
   #+cmu17 (declare (ignore env))
   (multiple-value-bind (form fixups)
       #+cmu17

@@ -238,7 +238,9 @@
 
 (defvar *lower-case* (make-string char-code-limit))
 (dotimes (i char-code-limit)
-  (setf (schar *lower-case* i) (char-downcase (code-char i))))
+  #-ccl (setf (schar *lower-case* i) (char-downcase (code-char i)))
+  #+ccl (let ((c (code-char i)))
+          (and c (setf (schar *lower-case* i) (char-downcase c)))))
 
 (defun simple-stringp-order (s1 s2)
   (declare (simple-string s1 s2) #.tdb:*highly-optimized*)
