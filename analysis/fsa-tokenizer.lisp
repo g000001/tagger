@@ -15,13 +15,13 @@
 
 
 ;;;; tokenizer rules and compiler
-
-(defclass tokenizer-fsa (fsa-standard)
-  ;; A character-labelled FSA whose final arcs are integers naming
-  ;; the rule to fire when the input matches the preceding path.
-  ((fsa-types :accessor fsa-types)	; table with type of each rule
-   (fsa-backups :accessor fsa-backups)	; number of characters to unread
-   ))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defclass tokenizer-fsa (fsa-standard)
+   ;; A character-labelled FSA whose final arcs are integers naming
+   ;; the rule to fire when the input matches the preceding path.
+   ((fsa-types :accessor fsa-types)    ; table with type of each rule
+    (fsa-backups :accessor fsa-backups)	; number of characters to unread
+    )))
 
 ;; subclasses and methods required for FSA calculus to work on the above
 (defclass tokenizer-nfa (tokenizer-fsa nfa) ())
@@ -67,12 +67,15 @@
 
 (defmacro def-tokenizer-fsa (name form &key augment)
   ;; build the FSA at macroexpand (i.e. compile) time
-  (let ((tokenizer-fsa
+  #|(let ((tokenizer-fsa
 	 (make-tokenizer-fsa (eval form)
 			     (and augment (symbol-value augment)))))
     `(defparameter ,name 
 	 #-cmu ',tokenizer-fsa
-	 #+cmu ,(fsa::make-load-sx tokenizer-fsa))))
+	 #+cmu ,(fsa::make-load-sx tokenizer-fsa)))|#
+  `(defparameter ,name 
+     (load-time-value 
+      (make-tokenizer-fsa ,form ,augment))))
 
 
 
