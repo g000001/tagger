@@ -273,10 +273,10 @@
 		  #'(lambda (class)
 		      (find-method generic-function () (list class) nil))
 		  (cdr (member superclass (c2mop:class-precedence-list class)))))))
-    #+pcl
+    #+(and pcl (not cmu20))
     (pcl::make-effective-method-function
      generic-function
-     (pcl::compute-effective-method
+     (pcl:compute-effective-method
       generic-function pcl::*standard-method-combination* methods))
     #+(and allegro (version>= 4) (not (version>= 8)))
     (clos::compute-effective-method-standard-mc generic-function methods)
@@ -429,7 +429,7 @@
 
 ;; No fix needed for franz 4.x
 
-#+(or sbcl ccl)
+#+(or sbcl ccl cmu20)
 (defmethod file-length ((stream stream))
   (cl:file-length stream))
 
@@ -499,7 +499,7 @@
 |#
 
 ;; Avoid bug in CMU destructuring of dotted pairs
-#+cmu
+#+(and cmu (not ansi-cl))
 (defmacro destructuring-bind (&rest rest) `(pcl::destructuring-bind ,@rest))
 
 ;; Allow floating-point underflow (generates denormalized floats or zero) 
