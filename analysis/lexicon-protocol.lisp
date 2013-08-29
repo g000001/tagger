@@ -87,12 +87,14 @@
    (concatenate 'simple-vector
      (lexicon-classes (ts-lexicon ts))
      (map 'simple-vector #'vector
-	  #-sbcl (remove :word (funcall (get-qua ts-types ts lexicon-filter) ts))
-          #+sbcl (remove :word 
-                         (funcall (get-qua ts-types ts lexicon-filter) 
-                                  nil
-                                  #'ts-types
-                                  ts))))
+	  #-(or sbcl)
+          (remove :word (funcall (get-qua ts-types ts lexicon-filter) ts))
+          #+(or sbcl)
+          (remove :word 
+                  (funcall (get-qua ts-types ts lexicon-filter) 
+                           nil
+                           #'ts-types
+                           ts))))
    :test #'equalp))
 
 (defmethod lexicon-lookup (token (ts lexicon-filter))
