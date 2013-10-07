@@ -2,6 +2,9 @@
 
 
 (defsystem :tagger
+  :description "The Xerox Part-of-Speech Tagger Version 1.2"
+  :author "Doug Cutting and Jan Pedersen of the Xerox Palo Alto Research Center"
+  :license "Use, reproduction, and distribution of this software is permitted, but only for non-commercial research or educational purposes. see the tagger/COPYRIGHT file for more information."
   :serial t
   :depends-on (:fiveam :closer-mop)
   :components ((:file "package")
