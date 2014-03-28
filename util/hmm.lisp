@@ -215,10 +215,10 @@
     (dotimes (i n result)
       (declare (fixnum i))
       (let ((elt (sfvref vector i)))
-	(declare (type (single-float 0.0 *) elt))
+	(declare (type (single-float 0.0f0 *) elt))
 	(setf (sfvref result i)
 	  (cond ((zerop elt) +negative-infinity+)
-		((> elt 1.0) 0.0)	;Due to rounding error?
+		((> elt 1.0f0) 0.0f0)	;Due to rounding error?
 		(t (log elt))))))))
 
 (defun log-matrix-transposed (matrix)
@@ -411,7 +411,7 @@
 	(sum 0.0f0))
     (dotimes (i n)
       (declare (fixnum i))
-      (incf sum (log (the (single-float 0.0 1.0) (sfvref c i)))))
+      (incf sum (log (the (single-float 0.0f0 1.0f0) (sfvref c i)))))
     (- sum)))
 
 (defun normalize-alpha (alpha n time c)
@@ -489,7 +489,7 @@
 	  (a-prime-at-i (svref a-prime i)))
       (declare (single-float norm))
       (if (zerop norm)
-	  (let ((n-inverse (/ 1.0 (hmm-n hmm))))
+	  (let ((n-inverse (/ 1.0f0 (hmm-n hmm))))
 	    (declare (single-float n-inverse))
 	    (dotimes (j (hmm-n hmm))
 	      (declare (fixnum j))
