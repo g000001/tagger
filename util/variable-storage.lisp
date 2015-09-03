@@ -39,7 +39,7 @@
       (declare (fixnum x))
       (let ((ans 0))
 	(declare (fixnum ans))
-	#-x86-64
+	#-(or x86_64 x86-64)
         (progn
           (unless (zerop (fash x -16))
             (setf ans 16
@@ -48,7 +48,7 @@
             (setf ans (f+ ans 8)
                   x (fash x -8)))
           (f+ ans (aref length-table x)))
-	#+x86-64
+	#+(or x86_64 x86-64)
         (progn
           (unless (zerop (fash x -32))
             (setf ans 32
