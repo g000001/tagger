@@ -160,7 +160,8 @@
   #+mcl (ccl::make-float-from-fixnums 0 0 2047 -1)
   #+ccl -1E++0
   #+sbcl sb-ext:single-float-negative-infinity
-  #-(or ccl allegro lucid cmu mcl sbcl)
+  #+ecl ext:single-float-negative-infinity
+  #-(or ccl allegro lucid cmu mcl sbcl ecl)
   (error "Don't know how to represent -infinity."))
 
 (defstruct (hmm-est
