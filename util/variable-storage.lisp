@@ -61,7 +61,6 @@
                   x (fash x -8)))
           (f+ ans (aref length-table x)))))))
 
-
 ;;ash-1 is like ash, except it shift in ones rather than zeros if you shift
 ;;left. 
 (cltl1-eval-when (compile load eval)
@@ -123,6 +122,15 @@
 (declaim (fixnum *storage-count*))
 (defvar *storage-count* 0)
 
+(defstruct (storage-bucket 
+	    (:conc-name sb-)
+	    (:print-function print-storage-bucket))
+  name
+  (buckets (make-array +end-buckets+) :type (simple-array t *))
+  (out-size 0 :type fixnum)
+  (out-count 0 :type fixnum)
+  (cons-fn #'default-cons :type (function (fixnum &optional t) t)))
+
 (defun print-storage-bucket (sb &optional (stream t) depth)
   (declare (ignore depth))
   (let* ((counts (map 'vector #'(lambda (x) (if (listp x) (length x) 0))
@@ -144,15 +152,6 @@
   (declare (ignore will-reclaim-p))
   (make-array size))
 
-(defstruct (storage-bucket 
-	    (:conc-name sb-)
-	    (:print-function print-storage-bucket))
-  name
-  (buckets (make-array +end-buckets+) :type (simple-array t *))
-  (out-size 0 :type fixnum)
-  (out-count 0 :type fixnum)
-  (cons-fn #'default-cons :type (function (fixnum &optional t) t)))
-  
 (defun make-variable-storage (cons-fn &optional name)
   (let ((bucket (make-storage-bucket :name name :cons-fn cons-fn)))
     (push bucket *all-buckets*)

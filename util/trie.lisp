@@ -40,7 +40,7 @@
 			    (walker nil)
 			    (element-type t)
 			    (key-accessor 'aref)
-                            (key-type `(simple-array ,element-type (*)))
+                            (key-type `(simple-array * (*)))
 			    (key-length 'length)
 			    element-to-fixnum
 			    fixnum-to-element
@@ -56,7 +56,7 @@
 		  ,@(unless fixnum-to-element
 		      '(:inverse-key-fn inverse-key-fn))))
      (defun ,accessor (key trie &optional default (limit (,key-length key)))
-       (declare #|(type ,key-type key)|# (fixnum limit))
+       (declare (type ,key-type key) (fixnum limit))
        (let (,@(unless element-to-fixnum '((key-fn (trie-key-fn trie))))
 	     (offset 0))
 	 (declare (fixnum offset)
@@ -87,7 +87,7 @@
 		      (setq node subnode)))))))))
      (defun ,setter (value key trie
 			      &optional default (limit (,key-length key)))
-       (declare #|(type ,key-type key)|# (ignore default) (fixnum limit))
+       (declare (type ,key-type key) (ignore default) (fixnum limit))
        (let (,@(unless element-to-fixnum '((key-fn (trie-key-fn trie))))
 	     (offset 0))
 	 (declare (fixnum offset)
@@ -128,7 +128,7 @@
      #+lucid(defsetf ,accessor (&rest rest) (val) `(,',setter ,val ,@rest))
      ,(when walker
 	`(defun ,walker (fn key trie &optional (limit (,key-length key)))
-	   (declare #|(type ,key-type key)|# (fixnum limit) (function fn))
+	   (declare (type ,key-type key) (fixnum limit) (function fn))
 	   (let (,@(unless element-to-fixnum '((key-fn (trie-key-fn trie))))
 		 (offset 0))
 	     (declare (fixnum offset)
@@ -240,7 +240,7 @@
 (defun test-string-trie (&optional (n 100))
   (let ((strings '())
 	(trie (make-string-trie)))
-    (do-external-symbols (sym :lisp)
+    (do-external-symbols (sym :cl)
       (push (string-downcase sym) strings))
     (time (dotimes (j n)
 	    (do ((tail strings (cdr tail))

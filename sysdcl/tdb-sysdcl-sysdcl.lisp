@@ -57,6 +57,7 @@
                    (asdf:system-source-directory :tagger)))
 
 (defun tdb-dirpath (&rest names)
+  (declare (ignorable names))
   #|(pdefsys:make-pathname :directory (cons :relative names)
 			 :defaults *tdb-root*)|#
   (asdf:system-source-directory :tagger))
@@ -87,8 +88,10 @@
 
 ;;; A more convenient version of the DEFSYSTEM macro for our purposes
 (defmacro def-tdb-system (name options &rest modules)
+  (declare (ignorable modules))
   (let ((dir (cdr (assoc :dir options)))
 	(sub-systems (cdr (assoc :sub-systems options))))
+    (declare (ignorable dir sub-systems))
     `(progn
        #|(pdefsys:defsystem ,name
 	   (:default-pathname (tdb-dirpath "src" ,@dir)
@@ -131,6 +134,7 @@
   #+(and excl parc)("ilu-tdb-sysdcl" :load-before-compile t))|#
 
 (defun tdb-compile (&key recompile)
+  (declare (ignorable recompile))
   #|(pdefsys:compile-system :tdb-sysdcl :recompile recompile)|#
   #|(pdefsys:load-system :tdb-sysdcl)|#
   #|(pdefsys:compile-systems (reverse *tdb-systems*) :recompile recompile)|#)

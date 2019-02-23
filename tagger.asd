@@ -41,8 +41,8 @@
                                      (:file "fsa-calculus")))
                (:module "analysis"
                         :components ((:file "analysis-protocol")
-                                     (:file "tag-basics")
                                      (:file "lexicon-protocol")
+                                     (:file "tag-basics")
                                      (:file "tag-analysis")
                                      (:file "class-guesser")
                                      (:file "fsa-tokenizer")
