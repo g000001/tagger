@@ -104,10 +104,10 @@
 			    (1- (length (the ,',resource-type ,v)))))))
 	    `(defmacro ,length-macro (v)
 	       (once-only (v)
-		 `(coerce
-		   (aref (the ,',resource-type ,v)
-			 (the fixnum (1- (length (the ,',resource-type ,v)))))
-		   'fixnum))))
+		 `(values
+                   (floor
+		    (aref (the ,',resource-type ,v)
+			  (the fixnum (1- (length (the ,',resource-type ,v))))))))))
 	 
 	 ,(if (subtypep 'fixnum element-type)
 	      `(defsetf ,length-macro (v) (new-length)
@@ -203,7 +203,7 @@
 		  ,@(mapcar #'(lambda (var) `(,',free-fn ,var)) vars)))))
 	 
 	 ,@(unless (eq ref-macro 'svref)
-	     `((eval-when (compile eval load)
+	     `((cltl1-eval-when (compile eval load)
 		 (export ',ref-macro))
 	       (defmacro ,ref-macro (var index)
 		 `(the ,',element-type
@@ -211,7 +211,7 @@
 	 
 	 ,@(when arithmetic-p
 	     `( 
-	       (eval-when (compile eval load)
+	       (cltl1-eval-when (compile eval load)
 		 (export '(,add-fn ,div-fn ,max-fn)))
 	       
 	       (defun ,add-fn (v1 v2)
@@ -297,7 +297,7 @@
     :conc-name fixv)
 
 (define-vector-resource single-float
-    :conc-name sfv :arithmetic-p t :fill-default 0.0)
+    :conc-name sfv :arithmetic-p t :fill-default 0.0s0)
 
 (define-vector-resource byte32 :conc-name byte32v)
 
@@ -308,3 +308,4 @@
 (put 'lert 'fi:common-lisp-indent-hook '(like let))
 (put 'lert* 'fi:common-lisp-indent-hook '(like let))
 |#
+
