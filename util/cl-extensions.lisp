@@ -435,8 +435,21 @@
 
 
 #+sbcl
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf (fdefinition 'string-input-stream-limit)
+        (fdefinition
+         (some (lambda (f)
+                 (find-symbol (string f) '#:sb-impl))
+               '(;; <= sbcl 2.0.4
+                 #:string-input-stream-end
+                 ;; >= sbcl 2.0.5
+                 #:string-input-stream-limit)))))
+
+
+#+sbcl
 (defmethod file-length ((stream string-stream))
-  (sb-impl::string-input-stream-end stream))
+  (string-input-stream-limit stream))
+
 
 #+ccl
 (defmethod file-length ((stream string-stream))
