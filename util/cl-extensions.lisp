@@ -287,17 +287,17 @@
      generic-function
      (clos::compute-effective-method-body generic-function methods))
     #+(or mcl ccl)
-    (ccl::compute-effective-method 
+    (c2mop:compute-effective-method 
      generic-function
-     (ccl::generic-function-method-combination generic-function)
+     (c2mop:generic-function-method-combination generic-function)
      methods)
     #+sbcl
-    (sb-pcl::fast-method-call-function
+    (sb-pcl::fast-method-call-function 
      (sb-pcl::make-effective-method-function    
       generic-function
-      (sb-pcl:compute-effective-method generic-function
-                                       sb-pcl::*standard-method-combination*
-                                       methods)))))
+      (c2mop:compute-effective-method generic-function
+                                      (c2mop:generic-function-method-combination generic-function)
+                                      methods)))))
 
 
 (defmacro get-qua (gf obj super)
